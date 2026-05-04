@@ -1,0 +1,65 @@
+<%- include('partials/head') %>
+<main class="agenda-shell agenda-home-shell">
+  <header class="agenda-home-hero">
+    <div class="agenda-brand-block">
+      <img src="<%= s.logo_url || '/public/assets/logo.svg' %>" alt="Biruta Park">
+      <div>
+        <span class="eyebrow">Área interna</span>
+        <h1>Agenda de Decoração</h1>
+        <p>Controle de decorações, horários, temas e pendências da equipe.</p>
+      </div>
+    </div>
+    <a class="btn ghost" href="/agendadecoracao/logout">Sair</a>
+  </header>
+
+  <% if(saved){ %><div class="toast-ok">Alterações salvas com sucesso!</div><% } %>
+  <% if(restored){ %><div class="toast-ok">Festa restaurada com sucesso!</div><% } %>
+
+  <section class="agenda-dashboard-grid">
+    <div class="agenda-dashboard-main">
+      <div class="status-card <%= stats.pending.length ? 'danger-status' : 'success-status' %>">
+        <span>Próximas 30 festas</span>
+        <% if(stats.pending.length){ %>
+          <strong><%= stats.pending.length %> pendência<%= stats.pending.length>1 ? 's' : '' %> de tema</strong>
+          <p>Existem festas com o tema <b>Á DECIDIR</b>. Elas precisam de contato com a cliente para confirmar a decoração.</p>
+        <% } else { %>
+          <strong>Nenhuma pendência de tema</strong>
+          <p>Todas as próximas 30 festas cadastradas estão com tema definido.</p>
+        <% } %>
+      </div>
+
+      <div class="agenda-mini-stats">
+        <div><span>Total analisado</span><strong><%= stats.next30.length %></strong><small>próximas festas</small></div>
+        <div><span>Temas definidos</span><strong><%= stats.next30.length - stats.pending.length %></strong><small>sem pendência</small></div>
+        <div><span>Á decidir</span><strong><%= stats.pending.length %></strong><small>precisa contato</small></div>
+      </div>
+
+      <div class="card agenda-next-list">
+        <div class="section-title compact-title"><span>Próximas festas</span><h2>Resumo rápido</h2></div>
+        <% if(stats.upcoming.slice(0,6).length){ %>
+          <% stats.upcoming.slice(0,6).forEach(ev=>{ const pend=String(ev.theme||'').trim().toUpperCase()==='Á DECIDIR'; %>
+            <a class="agenda-next-item <%= pend ? 'event-pending' : 'event-ok' %>" href="/agendadecoracao/editar/<%= ev.id %>">
+              <b><%= ev.birthday_name || 'ANIVERSARIANTE' %><%= ev.birthday_age ? ' - '+ev.birthday_age+' ANOS' : '' %></b>
+              <span><%= ev.date.split('-').reverse().join('/') %><%= ev.start_time ? ' • '+ev.start_time : '' %> <%= ev.end_time ? 'ATÉ '+ev.end_time : '' %> • <%= ev.theme || 'TEMA NÃO INFORMADO' %></span>
+            </a>
+          <% }) %>
+        <% } else { %>
+          <p class="muted">Nenhuma festa futura cadastrada ainda.</p>
+        <% } %>
+      </div>
+    </div>
+
+    <aside class="agenda-menu-panel">
+      <span class="eyebrow">Menu</span>
+      <h2>O que deseja acessar?</h2>
+      <a href="/agendadecoracao/calendario" class="agenda-menu-card orange"><b>Calendário</b><small>Ver e cadastrar festas por data</small></a>
+      <a href="/agendadecoracao/relatorio" class="agenda-menu-card blue"><b>Relatórios</b><small>Filtrar, visualizar e imprimir festas</small></a>
+      <% if(agenda_user && agenda_user.role==='admin'){ %>
+        <a href="/agendadecoracao/usuarios" class="agenda-menu-card dark"><b>Usuários</b><small>Criar acessos e permissões</small></a>
+        <a href="/agendadecoracao/lixeira" class="agenda-menu-card red"><b>Restaurar festas</b><small>Recuperar festas excluídas</small></a>
+      <% } %>
+    </aside>
+  </section>
+</main>
+</body>
+</html>

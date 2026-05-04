@@ -1,0 +1,45 @@
+<%- include('partials/head') %>
+<main class="agenda-shell">
+  <header class="agenda-top agenda-top-pro">
+    <div>
+      <img src="<%= s.logo_url || '/public/assets/logo.svg' %>" alt="Biruta">
+      <h1>Restaurar festas</h1>
+      <p>Lixeira da Agenda de Decoração - acesso somente administrador</p>
+    </div>
+    <nav>
+      <a href="/agendadecoracao">Início</a>
+      <a href="/agendadecoracao/calendario">Calendário</a>
+      <a href="/agendadecoracao/relatorio">Relatório</a>
+      <a href="/agendadecoracao/usuarios">Usuários</a>
+      <a href="/agendadecoracao/logout">Sair</a>
+    </nav>
+  </header>
+  <section class="card">
+    <h2>Festas excluídas</h2>
+    <% if(!events.length){ %><p class="muted">Nenhuma festa excluída para restaurar.</p><% } %>
+    <div class="trash-list">
+      <% events.forEach(ev=>{ const pend=String(ev.theme||'').trim().toUpperCase()==='Á DECIDIR'; %>
+        <article class="event-mini <%= pend ? 'event-pending' : 'event-ok' %>">
+          <div class="event-title"><strong><%= ev.birthday_name || 'ANIVERSARIANTE' %><%= ev.birthday_age ? ' - '+ev.birthday_age+' ANOS' : '' %></strong></div>
+          <div class="event-info">
+            <span><strong>Data:</strong> <%= ev.date ? ev.date.split('-').reverse().join('/') : '-' %></span>
+            <span><strong>Início:</strong> <%= ev.start_time || '-' %></span>
+            <span><strong>Término:</strong> <%= ev.end_time || '-' %></span>
+            <span><strong>Responsável:</strong> <%= ev.responsible_name || '-' %></span>
+            <span><strong>WhatsApp:</strong> <%= ev.whatsapp || '-' %></span>
+            <span><strong>Arco:</strong> <%= ev.has_arch || '-' %></span>
+            <span><strong>Tema:</strong> <%= ev.theme || '-' %></span>
+            <% if(ev.notes){ %><span class="full"><strong>Observações:</strong> <%= ev.notes %></span><% } %>
+            <span class="full"><strong>Excluída em:</strong> <%= ev.deleted_at ? new Date(ev.deleted_at).toLocaleString('pt-BR') : '-' %></span>
+          </div>
+          <div class="event-actions">
+            <form method="post" action="/agendadecoracao/restaurar/<%= ev.id %>"><button class="btn tiny" type="submit">Restaurar</button></form>
+            <form method="post" action="/agendadecoracao/lixeira/<%= ev.id %>/delete" onsubmit="return confirm('Excluir definitivamente?')"><button class="danger" type="submit">Excluir definitivo</button></form>
+          </div>
+        </article>
+      <% }) %>
+    </div>
+  </section>
+</main>
+</body>
+</html>

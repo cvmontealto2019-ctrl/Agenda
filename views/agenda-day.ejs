@@ -1,0 +1,111 @@
+<%- include('partials/head') %>
+<main class="agenda-shell">
+  <header class="agenda-top">
+    <div>
+      <img src="<%= s.logo_url || '/public/assets/logo.svg' %>" alt="Biruta">
+      <h1>Agenda de Decoração</h1>
+      <p><%= date.split('-').reverse().join('/') %></p>
+    </div>
+    <nav>
+      <a href="/agendadecoracao/calendario?year=<%= Number(date.slice(0,4)) %>&month=<%= Number(date.slice(5,7)) %>">Calendário</a>
+      <a href="/agendadecoracao/relatorio">Relatório</a>
+      <% if(agenda_user && agenda_user.role==='admin'){ %><a href="/agendadecoracao/lixeira">Restaurar</a><% } %>
+      <a href="/agendadecoracao/logout">Sair</a>
+    </nav>
+  </header>
+
+  <section class="agenda-day-layout">
+    <div class="card">
+      <h2>Festas cadastradas</h2>
+      <% if(!events.length){ %><p class="muted">Nenhuma festa cadastrada para esta data.</p><% } %>
+      <% events.forEach(ev=>{ const pend=String(ev.theme||'').trim().toUpperCase()==='Á DECIDIR'; %>
+        <div class="event-mini <%= pend ? 'event-pending' : 'event-ok' %>">
+          <div class="event-title">
+            <strong><%= ev.birthday_name || 'ANIVERSARIANTE' %><%= ev.birthday_age ? ' - '+ev.birthday_age+' ANOS' : '' %></strong>
+          </div>
+          <div class="event-info">
+            <span><strong>Responsável:</strong> <%= ev.responsible_name || '-' %></span>
+            <span><strong>WhatsApp:</strong> <%= ev.whatsapp || '-' %></span>
+            <span><strong>Início:</strong> <%= ev.start_time || '-' %></span>
+            <span><strong>Término:</strong> <%= ev.end_time || '-' %></span>
+            <span><strong>Arco:</strong> <%= ev.has_arch || '-' %></span>
+            <span><strong>Tema:</strong> <%= ev.theme || '-' %></span>
+            <% if(ev.notes){ %><span class="full"><strong>Observações:</strong> <%= ev.notes %></span><% } %>
+          </div>
+          <div class="event-actions">
+            <% if(canEditAgenda()){ %><a class="btn tiny" href="/agendadecoracao/editar/<%= ev.id %>">Editar</a><% } %>
+            <a class="btn tiny whatsapp" href="<%= whatsUrl(ev.whatsapp, 'Olá! Tudo bem? Gostaria de falar sobre a decoração da festa.') %>" target="_blank">WhatsApp</a>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+
+    <% if(canEditAgenda()){ %>
+      <div class="card">
+        <h2><%= edit ? 'Editar festa' : 'Adicionar festa' %></h2>
+        <form class="form-grid agenda-form uppercase-form" method="post" action="/agendadecoracao/salvar">
+          <input type="hidden" name="id" value="<%= edit ? edit.id : '' %>">
+          <label>Data da festa<input type="date" name="date" value="<%= edit ? edit.date : date %>" required></label>
+          <label>Horário de início<input type="time" name="start_time" value="<%= edit ? (edit.start_time || '') : '' %>"></label>
+          <label>Horário de término<input type="time" name="end_time" value="<%= edit ? (edit.end_time || '') : '' %>"></label>
+          <label>Nome do responsável<input name="responsible_name" placeholder="NOME DO RESPONSÁVEL" value="<%= edit ? edit.responsible_name : '' %>" required></label>
+          <label>WhatsApp do responsável<input name="whatsapp" placeholder="(16) 99999-9999" value="<%= edit ? edit.whatsapp : '' %>"></label>
+          <label>Nome do aniversariante<input name="birthday_name" placeholder="NOME DO ANIVERSARIANTE" value="<%= edit ? edit.birthday_name : '' %>"></label>
+          <label>Idade que irá fazer<input name="birthday_age" placeholder="EX: 5" value="<%= edit ? edit.birthday_age : '' %>"></label>
+          <label>Arco
+            <select name="has_arch">
+              <option value="SIM" <%= edit && edit.has_arch==='SIM' ? 'selected' : '' %>>SIM</option>
+              <option value="NÃO" <%= !edit || edit.has_arch==='NÃO' ? 'selected' : '' %>>NÃO</option>
+            </select>
+          </label>
+          <label>Tema
+            <select name="theme" id="themeSelect">
+              <% themes.forEach(t=>{ %><option value="<%= t %>" <%= edit && edit.theme===t ? 'selected' : '' %>><%= t %></option><% }) %>
+              <option value="PERSONALIZADO">PERSONALIZADO</option>
+            </select>
+          </label>
+          <input id="customTheme" name="custom_theme" placeholder="DIGITE O NOVO TEMA PERSONALIZADO" style="display:none">
+          <label class="wide">Observações<textarea name="notes" placeholder="OBSERVAÇÕES SOBRE DECORAÇÃO, ARCO, DETALHES E COMBINADOS"><%= edit ? edit.notes : '' %></textarea></label>
+          <button class="btn" type="submit"><%= edit ? 'Salvar alterações' : 'Salvar festa' %></button>
+        </form>
+        <% if(edit){ %>
+          <form method="post" action="/agendadecoracao/excluir/<%= edit.id %>" onsubmit="return confirm('Excluir esta festa?')">
+            <button class="danger" type="submit">Excluir festa</button>
+          </form>
+        <% } %>
+      </div>
+    <% } else { %>
+      <div class="card"><h2>Modo visualização</h2><p class="muted">Seu usuário pode apenas consultar a agenda.</p></div>
+    <% } %>
+  </section>
+</main>
+<script>
+const sel = document.getElementById('themeSelect');
+const custom = document.getElementById('customTheme');
+function toggleTheme(){
+  if(!sel || !custom) return;
+  custom.style.display = sel.value === 'PERSONALIZADO' ? 'block' : 'none';
+  if(sel.value === 'PERSONALIZADO') custom.focus();
+}
+sel && sel.addEventListener('change', toggleTheme);
+toggleTheme();
+document.querySelectorAll('.uppercase-form input:not([type="date"]):not([type="time"]), .uppercase-form textarea').forEach(el => {
+  el.addEventListener('input', () => {
+    const start = el.selectionStart;
+    const end = el.selectionEnd;
+    el.value = el.value.toLocaleUpperCase('pt-BR');
+    if(typeof start === 'number') el.setSelectionRange(start, end);
+  });
+});
+document.querySelectorAll('.agenda-form input,.agenda-form select,.agenda-form textarea').forEach((el,i,arr)=>{
+  el.addEventListener('keydown',e=>{
+    if(e.key==='Enter' && el.tagName !== 'TEXTAREA'){
+      e.preventDefault();
+      const next = arr[i+1];
+      if(next) next.focus(); else el.form.requestSubmit();
+    }
+  });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+{
+  "settings": {
+    "site_title": "Agenda de Decoração | Biruta Park",
+    "logo_url": "/public/assets/logo.svg",
+    "favicon_url": "/public/assets/favicon.svg"
+  },
+  "agenda_users": [
+    {
+      "id": 1,
+      "login": "decoracao",
+      "password": "Biruta@2026",
+      "name": "ADMIN DECORAÇÃO",
+      "role": "admin"
+    }
+  ],
+  "agenda_events": [],
+  "agenda_deleted_events": [],
+  "themes": [
+    "Á DECIDIR"
+  ],
+  "next": {
+    "agenda": 1,
+    "agenda_user": 2
+  }
+}

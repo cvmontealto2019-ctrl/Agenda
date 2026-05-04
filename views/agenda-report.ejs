@@ -1,0 +1,80 @@
+<%- include('partials/head') %>
+<main class="agenda-shell report-page">
+  <header class="agenda-top no-print">
+    <div>
+      <img src="<%= s.logo_url || '/public/assets/logo.svg' %>" alt="Biruta">
+      <h1>Relatório de Festas</h1>
+      <p>Agenda de Decoração</p>
+    </div>
+    <nav>
+      <a href="/agendadecoracao">Início</a>
+      <a href="/agendadecoracao/calendario">Calendário</a>
+      <a href="#" onclick="window.print();return false;">Imprimir</a>
+      <a href="/agendadecoracao/logout">Sair</a>
+    </nav>
+  </header>
+
+  <section class="card no-print">
+    <h2>Selecionar relatório</h2>
+    <form class="form-grid" method="get" action="/agendadecoracao/relatorio">
+      <label>De<input type="date" name="start" value="<%= start %>"></label>
+      <label>Até<input type="date" name="end" value="<%= end %>"></label>
+      <label>Status
+        <select name="status">
+          <option value="todas" <%= status==='todas' ? 'selected' : '' %>>Todas cadastradas</option>
+          <option value="pendentes" <%= status==='pendentes' ? 'selected' : '' %>>Somente Á DECIDIR</option>
+          <option value="confirmados" <%= status==='confirmados' ? 'selected' : '' %>>Somente temas definidos</option>
+        </select>
+      </label>
+      <button class="btn" type="submit">Gerar relatório</button>
+      <button type="button" class="btn ghost" onclick="window.print()">Imprimir relatório</button>
+    </form>
+  </section>
+
+  <section class="print-sheet">
+    <div class="report-title">
+      <img src="<%= s.logo_url || '/public/assets/logo.svg' %>" alt="Biruta">
+      <div>
+        <h1>Agenda de Decoração</h1>
+        <p>Relatório de festas cadastradas</p>
+      </div>
+    </div>
+    <p><strong>Total:</strong> <%= events.length %> festa<%= events.length!==1 ? 's' : '' %></p>
+    <div class="table">
+      <table>
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Início</th>
+            <th>Término</th>
+            <th>Responsável</th>
+            <th>WhatsApp</th>
+            <th>Aniversariante</th>
+            <th>Idade</th>
+            <th>Arco</th>
+            <th>Tema</th>
+            <th>Observações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% events.forEach(ev=>{ const pend=String(ev.theme||'').trim().toUpperCase()==='Á DECIDIR'; %>
+            <tr class="<%= pend ? 'row-pending' : 'row-ok' %>">
+              <td><%= ev.date.split('-').reverse().join('/') %></td>
+              <td><%= ev.start_time || '-' %></td>
+              <td><%= ev.end_time || '-' %></td>
+              <td><%= ev.responsible_name %></td>
+              <td><%= ev.whatsapp %></td>
+              <td><%= ev.birthday_name %></td>
+              <td><%= ev.birthday_age %></td>
+              <td><%= ev.has_arch %></td>
+              <td><%= ev.theme %></td>
+              <td><%= ev.notes %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+</body>
+</html>
